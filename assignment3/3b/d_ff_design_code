@@ -1,13 +1,18 @@
-module d_flip_flop (
-    input clk,
-    input rst,       // asynchronous reset
-    input d,
-    output reg q
+module mux_dff_feedback (
+  input sel,
+  input d0,
+  input d1,
+  input clk,
+  output reg q
 );
-    always @(posedge clk or posedge rst) begin
-        if (rst)
-            q <= 1'b0;
-        else
-            q <= d;
-    end
+
+  wire mux_out;
+
+  assign mux_out = (sel) ? d1 : d0;
+
+  always @(posedge clk) begin
+    q <= mux_out;
+  end
+
 endmodule
+
