@@ -1,40 +1,50 @@
-`timescale 1ns / 1ps
+`timescale 1ns/1ps
 
-module d_flip_flop_tb;
+module tb_mux_dff_feedback;
 
-    reg clk, rst, d;
-    wire q;
+  reg sel;
+  reg d0, d1;
+  reg clk;
+  wire q;
 
-    // Instantiate the D Flip-Flop
-    d_flip_flop uut (
-        .clk(clk),
-        .rst(rst),
-        .d(d),
-        .q(q)
-    );
+  // Instantiate DUT
+  mux_dff_feedback dut (
+    .sel(sel),
+    .d0(d0),
+    .d1(d1),
+    .clk(clk),
+    .q(q)
+  );
 
-    // Clock generator: 10ns period
-    always #5 clk = ~clk;
+  // Clock generation
+  always #5 clk = ~clk;
 
-    initial begin
-        // Initialize signals
-        clk = 0;
-        rst = 1;
-        d = 0;
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0, tb_mux_dff_feedback);
 
-        // Dump file for waveform viewing
-        $dumpfile("dff.vcd");
-        $dumpvars(0);
+    // Initialize signals
+    clk = 0;
+    sel = 0;
+    d0 = 0;
+    d1 = 0;
 
-        // Reset and test behavior
-        #10 rst = 0; d = 1;
-        #10 d = 0;
-        #10 d = 1;
-        #10 d = 1;
-        #10 rst = 1; // Apply async reset
-        #10 rst = 0; d = 0;
-        #10 d = 1;
-        #30 $finish;
-    end
+    #10;
+    d0 = 1; d1 = 0; sel = 0; // Select d0
+    #10;
+    d0 = 0; d1 = 1; sel = 1; // Select d1
+    #10;
+    d0 = 0; d1 = 1; sel = 0; // Select d0 again
+    #10;
+    d0 = 1; d1 = 0; sel = 1; // Select d1 again
+    #10;
+
+    // Feedback test: feed q into d0
+    d0 = q; sel = 0;
+    #10;
+
+    $finish;
+  end
 
 endmodule
+
